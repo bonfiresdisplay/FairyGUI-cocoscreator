@@ -25,3 +25,5 @@ Official website: [www.fairygui.com](https://www.fairygui.com)
 
 # License
 MIT
+
+# 适配cocos creator 3.8
