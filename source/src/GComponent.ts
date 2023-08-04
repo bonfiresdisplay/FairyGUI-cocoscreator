@@ -633,11 +633,11 @@ export class GComponent extends GObject {
             value.node.on(Node.EventType.SIZE_CHANGED, this.onMaskContentChanged, this);
             value.node.on(Node.EventType.ANCHOR_CHANGED, this.onMaskContentChanged, this);
 
-            this._customMask.inverted = inverted;
+            // this._customMask.inverted = inverted;
             if (this._node.activeInHierarchy)
-                this.onMaskReady();
+                this.onMaskReady(inverted);
             else
-                this.on(FUIEvent.DISPLAY, this.onMaskReady, this);
+                this.on(FUIEvent.DISPLAY, this.onMaskReady.bind(this, inverted), this);
 
             this.onMaskContentChanged();
             if (this._scrollPane)
@@ -660,20 +660,23 @@ export class GComponent extends GObject {
         }
     }
 
-    private onMaskReady() {
+    private onMaskReady(inverted: boolean) {
         this.off(FUIEvent.DISPLAY, this.onMaskReady, this);
 
         if (this._maskContent instanceof GImage) {
-            this._customMask.type = Mask.Type.IMAGE_STENCIL;
+            this._customMask.type = Mask.Type.SPRITE_STENCIL;
             this._customMask.alphaThreshold = 0.0001;
             this._customMask.spriteFrame = this._maskContent._content.spriteFrame;
         }
         else if (this._maskContent instanceof GGraph) {
-            if (this._maskContent.type == 2)
-                this._customMask.type = Mask.Type.ELLIPSE;
+            if (this._maskContent.type == 1) {
+                this._customMask.type = Mask.Type.GRAPHICS_RECT;
+            } else if (this._maskContent.type == 2)
+                this._customMask.type = Mask.Type.GRAPHICS_ELLIPSE;
             else
-                this._customMask.type = Mask.Type.RECT;
+                this._customMask.type = Mask.Type.GRAPHICS_STENCIL;
         }
+        this._customMask.inverted = inverted;
     }
 
     private onMaskContentChanged() {
