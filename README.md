@@ -58,6 +58,8 @@ gulp build
 2. director.getTotalTime() -> game.totalTime
 3. view.getCanvasSize() -> screen.windowSize
 4. View.instance.getCanvasSize() -> screen.windowSize
+5. spine
+
 
 引入creator工程
 将fairygui.mjs放到asset/lib/目录下
