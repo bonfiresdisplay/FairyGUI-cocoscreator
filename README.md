@@ -26,4 +26,76 @@ Official website: [www.fairygui.com](https://www.fairygui.com)
 # License
 MIT
 
+
+# 关于编译源码
+安装npm
+
+安装gulp
+```
+npm install gulp-cli -g
+npm install gulp -D
+gulp --help
+```
+
+安装依赖
+```
+npm install
+```
+
+安装rollup
+```
+npm install rollup
+```
+
+执行编译
+```
+gulp build
+```
+
 # 适配cocos creator 3.8
+
+1. RenderComponent -> UIRenderer
+2. director.getTotalTime() -> game.totalTime
+3. view.getCanvasSize() -> screen.windowSize
+4. View.instance.getCanvasSize() -> screen.windowSize
+
+引入creator工程
+将fairygui.mjs放到asset/lib/目录下
+将fairygui.d.ts放到temp/目录下
+
+// 修复creator编辑器报错
+项目-项目设置-脚本-Import Map
+// 要重启Creator
+import-map.json
+```
+{
+  "imports": {
+    "fairygui": "./assets/lib/fairygui.mjs"
+  }
+}
+```
+
+// 修复VSC报错
+tsconfig.json
+```
+{
+  "extends": "./temp/tsconfig.cocos.json",
+  "compilerOptions": {
+    "strict": false,
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "fairygui": [
+        "./assets/lib/fairygui.mjs"
+      ]
+    }
+  }
+}
+```
+
+
+
+
+```
+RollupError: You must specify "output.file" or "output.dir" for the build.
+```
+

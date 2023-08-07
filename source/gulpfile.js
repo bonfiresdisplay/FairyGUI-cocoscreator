@@ -27,7 +27,8 @@ gulp.task("rollup", async function () {
             format: 'esm',
             extend: true,
             name: 'fgui',
-        }
+        },
+        file: 'dist/fairygui.mjs'
     };
     const subTask = await rollup.rollup(config);
     await subTask.write(config);
