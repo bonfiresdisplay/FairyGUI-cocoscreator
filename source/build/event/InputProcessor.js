@@ -1,8 +1,8 @@
-import { Component, Vec2, RichText, sys, Node, EventMouse, director, Vec3 } from "cc";
+import { Component, EventMouse, Node, RichText, Vec2, Vec3, director, game, sys } from "cc";
 import { GObject } from "../GObject";
 import { GRichTextField } from "../GRichTextField";
 import { UIContentScaler } from "../UIContentScaler";
-import { borrowEvent, Event as FUIEvent, returnEvent } from "./Event";
+import { Event as FUIEvent, borrowEvent, returnEvent } from "./Event";
 export class InputProcessor extends Component {
     constructor() {
         super();
@@ -326,7 +326,7 @@ export class InputProcessor extends Component {
     }
     setEnd(ti) {
         ti.began = false;
-        let now = director.getTotalTime() / 1000;
+        let now = game.totalTime / 1000;
         let elapsed = now - ti.lastClickTime;
         if (elapsed < 0.45) {
             if (ti.clickCount == 2)

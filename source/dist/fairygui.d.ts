@@ -650,7 +650,7 @@ declare module 'fairygui-cc/GLoader' {
 }
 
 declare module 'fairygui-cc/GLoader3D' {
-    import { sp, dragonBones, Color, Vec2 } from "cc";
+    import { Color, Vec2, dragonBones, sp } from "cc";
     import { AlignType, LoaderFillType, VertAlignType } from "fairygui-cc/FieldTypes";
     import { GObject } from "fairygui-cc/GObject";
     import { ByteBuffer } from "fairygui-cc/utils/ByteBuffer";
@@ -687,7 +687,9 @@ declare module 'fairygui-cc/GLoader3D' {
         protected loadContent(): void;
         protected loadFromPackage(itemURL: string): void;
         setSpine(asset: sp.SkeletonData, anchor: Vec2, pma?: boolean): void;
+        freeSpine(): void;
         setDragonBones(asset: dragonBones.DragonBonesAsset, atlasAsset: dragonBones.DragonBonesAtlasAsset, anchor: Vec2, pma?: boolean): void;
+        freeDragonBones(): void;
         protected loadExternal(): void;
         protected handleSizeChanged(): void;
         protected handleAnchorChanged(): void;
