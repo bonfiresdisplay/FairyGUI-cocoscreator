@@ -469,5 +469,7 @@ export class GTextField extends GObject {
         var str = buffer.readS();
         if (str != null)
             this.text = str;
+        this.y += 4;
+        this.x += 2;
     }
 }
