@@ -84,6 +84,13 @@ gulp build
   ```
 
 
+  代码中引入
+  ```
+import * as fgui from "fairygui-cc";
+
+fgui.GRoot.create();
+  ```
+
 
 ```
 RollupError: You must specify "output.file" or "output.dir" for the build.
