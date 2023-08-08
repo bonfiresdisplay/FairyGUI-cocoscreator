@@ -59,41 +59,29 @@ gulp build
 3. view.getCanvasSize() -> screen.windowSize
 4. View.instance.getCanvasSize() -> screen.windowSize
 5. spine
+6. GTextField 修复位置偏移
 
 
-引入creator工程
-将fairygui.mjs放到asset/lib/目录下
-将fairygui.d.ts放到temp/目录下
+# 引入creator工程
 
-// 修复creator编辑器报错
-项目-项目设置-脚本-Import Map
-// 要重启Creator
-import-map.json
-```
+  将fairygui.mjs放到asset/lib/目录下
+
+  将fairygui.d.ts放到temp/目录下
+
+
+  // 修复creator编辑器报错
+
+  项目-项目设置-脚本-Import Map
+
+  // 要重启Creator
+  import-map.json
+  ```
 {
   "imports": {
-    "fairygui": "./assets/lib/fairygui.mjs"
+    "fairygui-cc": "./assets/lib/fairygui.mjs"
   }
 }
-```
-
-// 修复VSC报错
-tsconfig.json
-```
-{
-  "extends": "./temp/tsconfig.cocos.json",
-  "compilerOptions": {
-    "strict": false,
-    "allowSyntheticDefaultImports": true,
-    "paths": {
-      "fairygui": [
-        "./assets/lib/fairygui.mjs"
-      ]
-    }
-  }
-}
-```
-
+  ```
 
 
 
@@ -101,3 +89,5 @@ tsconfig.json
 RollupError: You must specify "output.file" or "output.dir" for the build.
 ```
 
+# PS:
+  1. fgui的字距功能在cocos creator中不支持
