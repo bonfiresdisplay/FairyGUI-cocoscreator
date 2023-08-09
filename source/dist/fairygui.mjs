@@ -5084,7 +5084,9 @@ class UIPackage {
         let all = 11;
         this.loadAny({
             url: url + '.bin'
-        }, {}, (finished, total, item) => {
+        }, {
+            framework: 'fgui'
+        }, (finished, total, item) => {
             console.log(`==> ${total}/${finished}`);
             onProgress(finished, all);
         }, (err, data) => {
@@ -5147,7 +5149,9 @@ class UIPackage {
                         taskComplete(null, asset, pi);
                         return;
                     }
-                    this.loadAny({ url: url + types[index] }, null, null, (e, a) => {
+                    this.loadAny({ url: url + types[index] }, {
+                        framework: 'fgui'
+                    }, null, (e, a) => {
                         taskComplete(e, a, pi);
                     });
                 });
@@ -6056,7 +6060,7 @@ class GTextField extends GObject {
     set letterSpacing(value) {
         if (this._label && this._label.spacingX != value) {
             this.markSizeChanged();
-            this._label.spacingX = value;
+            this._label.spacingX = value + 3;
         }
     }
     get underline() {

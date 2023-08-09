@@ -107,7 +107,7 @@ export class GTextField extends GObject {
     set letterSpacing(value) {
         if (this._label && this._label.spacingX != value) {
             this.markSizeChanged();
-            this._label.spacingX = value;
+            this._label.spacingX = value + 3;
         }
     }
     get underline() {

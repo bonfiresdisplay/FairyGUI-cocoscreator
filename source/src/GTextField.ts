@@ -156,7 +156,7 @@ export class GTextField extends GObject {
     public set letterSpacing(value: number) {
         if (this._label && this._label.spacingX != value) {
             this.markSizeChanged();
-            this._label.spacingX = value;
+            this._label.spacingX = value + 3;
         }
     }
 

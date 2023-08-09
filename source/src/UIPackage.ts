@@ -101,98 +101,91 @@ export class UIPackage {
 
         this.loadAny({
             url: url + '.bin'
-        }, {},
-            (finished: number, total: number, item: AssetManager.RequestItem) => { // onProgress
-                console.log(`==> ${total}/${finished}`)
-                onProgress(finished, all);
-            }, (err: Error | null, data: any) => { // onComplete
-                if (err) {
-                    console.error(err);
-                    return;
+        }, {
+            framework: 'fgui'
+        }, (finished: number, total: number, item: AssetManager.RequestItem) => { // onProgress
+            console.log(`==> ${total}/${finished}`)
+            onProgress(finished, all);
+        }, (err: Error | null, data: any) => { // onComplete
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            pkg = new UIPackage();
+            pkg.loadPackage(new ByteBuffer(data), url);
+            let cnt: number = pkg._items.length;
+            let urls: Array<string> = [];
+            let types: Array<string> = [];
+            let types2: Array<any> = [];
+            let itemList: Array<PackageItem> = [];
+            for (var i: number = 0; i < cnt; i++) {
+                var pi: PackageItem = pkg._items[i];
+                if (pi.type == PackageItemType.Atlas || pi.type == PackageItemType.Sound) {
+                    let assetType = ItemTypeToAssetType[pi.type];
+                    urls.push(pi.file);
+                    types2.push(assetType);
+                    itemList.push(pi);
+                }
+                if (pi.type == PackageItemType.Atlas) {
+                    types.push('.png');
+                } else if (pi.type == PackageItemType.Sound) {
+                    types.push('.mp3')
+                }
+            }
+
+            let total = urls.length;
+            let allNew = total;
+            let lastErr: Error;
+            let taskComplete = (err: Error | null, asset: Asset, pi: PackageItem) => {
+                total--;
+                if (err)
+                    lastErr = err;
+
+                onProgress(1 + (allNew - total) / allNew * 10, all);
+
+                if (asset) {
+                    pkg._remoteAssets.set(pi.file, asset);
                 }
 
-                pkg = new UIPackage();
-                pkg.loadPackage(new ByteBuffer(data), url);
-                let cnt: number = pkg._items.length;
-                let urls: Array<string> = [];
-                let types: Array<string> = [];
-                let types2: Array<any> = [];
-                let itemList: Array<PackageItem> = [];
-                for (var i: number = 0; i < cnt; i++) {
-                    var pi: PackageItem = pkg._items[i];
-                    if (pi.type == PackageItemType.Atlas || pi.type == PackageItemType.Sound) {
-                        let assetType = ItemTypeToAssetType[pi.type];
-                        urls.push(pi.file);
-                        types2.push(assetType);
-                        itemList.push(pi);
-                    }
-                    if (pi.type == PackageItemType.Atlas) {
-                        types.push('.png');
-                    } else if (pi.type == PackageItemType.Sound) {
-                        types.push('.mp3')
-                    }
+                if (total <= 0) {
+                    _instById[pkg.id] = pkg;
+                    _instByName[pkg.name] = pkg;
+                    if (pkg._path)
+                        _instById[pkg._path] = pkg;
+
+                    if (onComplete != null)
+                        onComplete(lastErr, pkg);
                 }
+            }
 
-                let total = urls.length;
-                let allNew = total;
-                let lastErr: Error;
-                let taskComplete = (err: Error | null, asset: Asset, pi: PackageItem) => {
-                    total--;
-                    if (err)
-                        lastErr = err;
+            if (total > 0) {
 
-                    onProgress(1 + (allNew - total) / allNew * 10, all);
-
+                urls.forEach((url, index) => {
+                    let pi = itemList[index];
+                    let asset = pkg._remoteAssets.get(pi.file);
                     if (asset) {
-                        pkg._remoteAssets.set(pi.file, asset);
-
-                        // if (pi.type == PackageItemType.Atlas) {
-                        //     let t = new Texture2D();
-                        //     t.image = asset as ImageAsset;
-                        //     pkg._remoteAssets.set(pi.file, t);
-                        // } else if (pi.type == PackageItemType.Sound) {
-                        //     pkg._remoteAssets.set(pi.file, asset);
-                        // }
+                        taskComplete(null, asset, pi);
+                        return;
                     }
 
-                    if (total <= 0) {
-                        _instById[pkg.id] = pkg;
-                        _instByName[pkg.name] = pkg;
-                        if (pkg._path)
-                            _instById[pkg._path] = pkg;
-
-                        if (onComplete != null)
-                            onComplete(lastErr, pkg);
-                    }
-                }
-
-                if (total > 0) {
-
-                    urls.forEach((url, index) => {
-                        let pi = itemList[index];
-                        let asset = pkg._remoteAssets.get(pi.file);
-                        if (asset) {
-                            taskComplete(null, asset, pi);
-                            return;
-                        }
-
-                        this.loadAny({ url: url + types[index] }, null, null, (e, a) => {
-                            taskComplete(e, a, pi);
-                        });
+                    this.loadRemote(url + types[index], types2[index], (e, a) => {
+                        taskComplete(e, a, pi);
                     });
-                }
-                else
-                    taskComplete(null, null, null);
-            })
+                });
+            }
+            else
+                taskComplete(null, null, null);
+        })
 
     }
 
 
-    static loadRemote(request: string, type: any, onComplete: (err: Error | null, data: any) => void) {
+    private static loadRemote(request: string, type: any, onComplete: (err: Error | null, data: any) => void) {
         assetManager.loadRemote(request, type, onComplete);
     }
 
-    static loadAny(request: any, options: any, onProgress: (finished: number, total: number, item: AssetManager.RequestItem) => void, onComplete: (err: Error | null, data: any) => void) {
+    private static loadAny(request: any, options: any, onProgress: (finished: number, total: number, item: AssetManager.RequestItem) => void, onComplete: (err: Error | null, data: any) => void) {
         assetManager.loadAny(request, options, onProgress, onComplete);
     }
 

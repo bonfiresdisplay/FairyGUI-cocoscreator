@@ -69,7 +69,9 @@ export class UIPackage {
         let all = 11;
         this.loadAny({
             url: url + '.bin'
-        }, {}, (finished, total, item) => {
+        }, {
+            framework: 'fgui'
+        }, (finished, total, item) => {
             console.log(`==> ${total}/${finished}`);
             onProgress(finished, all);
         }, (err, data) => {
@@ -134,7 +136,9 @@ export class UIPackage {
                         taskComplete(null, asset, pi);
                         return;
                     }
-                    this.loadAny({ url: url + types[index] }, null, null, (e, a) => {
+                    this.loadAny({ url: url + types[index] }, {
+                        framework: 'fgui'
+                    }, null, (e, a) => {
                         taskComplete(e, a, pi);
                     });
                 });
