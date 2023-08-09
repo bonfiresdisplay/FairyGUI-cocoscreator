@@ -15,6 +15,7 @@ export class UIPackage {
         this._dependencies = [];
         this._branches = [];
         this._branchIndex = -1;
+        this._remoteAssets = new Map;
     }
     static get branch() {
         return _branch;
@@ -60,6 +61,93 @@ export class UIPackage {
         _instByName[pkg.name] = pkg;
         _instById[pkg._path] = pkg;
         return pkg;
+    }
+    static loadRemotePackage(url, onProgress, onComplete) {
+        let pkg = _instById[url];
+        if (pkg)
+            return;
+        let all = 11;
+        this.loadAny({
+            url: url + '.bin'
+        }, {}, (finished, total, item) => {
+            console.log(`==> ${total}/${finished}`);
+            onProgress(finished, all);
+        }, (err, data) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            pkg = new UIPackage();
+            pkg.loadPackage(new ByteBuffer(data), url);
+            let cnt = pkg._items.length;
+            let urls = [];
+            let types = [];
+            let types2 = [];
+            let itemList = [];
+            for (var i = 0; i < cnt; i++) {
+                var pi = pkg._items[i];
+                if (pi.type == PackageItemType.Atlas || pi.type == PackageItemType.Sound) {
+                    let assetType = ItemTypeToAssetType[pi.type];
+                    urls.push(pi.file);
+                    types2.push(assetType);
+                    itemList.push(pi);
+                }
+                if (pi.type == PackageItemType.Atlas) {
+                    types.push('.png');
+                }
+                else if (pi.type == PackageItemType.Sound) {
+                    types.push('.mp3');
+                }
+            }
+            let total = urls.length;
+            let allNew = total;
+            let lastErr;
+            let taskComplete = (err, asset, pi) => {
+                total--;
+                if (err)
+                    lastErr = err;
+                onProgress(1 + (allNew - total) / allNew * 10, all);
+                if (asset) {
+                    pkg._remoteAssets.set(pi.file, asset);
+                    // if (pi.type == PackageItemType.Atlas) {
+                    //     let t = new Texture2D();
+                    //     t.image = asset as ImageAsset;
+                    //     pkg._remoteAssets.set(pi.file, t);
+                    // } else if (pi.type == PackageItemType.Sound) {
+                    //     pkg._remoteAssets.set(pi.file, asset);
+                    // }
+                }
+                if (total <= 0) {
+                    _instById[pkg.id] = pkg;
+                    _instByName[pkg.name] = pkg;
+                    if (pkg._path)
+                        _instById[pkg._path] = pkg;
+                    if (onComplete != null)
+                        onComplete(lastErr, pkg);
+                }
+            };
+            if (total > 0) {
+                urls.forEach((url, index) => {
+                    let pi = itemList[index];
+                    let asset = pkg._remoteAssets.get(pi.file);
+                    if (asset) {
+                        taskComplete(null, asset, pi);
+                        return;
+                    }
+                    this.loadAny({ url: url + types[index] }, null, null, (e, a) => {
+                        taskComplete(e, a, pi);
+                    });
+                });
+            }
+            else
+                taskComplete(null, null, null);
+        });
+    }
+    static loadRemote(request, type, onComplete) {
+        assetManager.loadRemote(request, type, onComplete);
+    }
+    static loadAny(request, options, onProgress, onComplete) {
+        assetManager.loadAny(request, options, onProgress, onComplete);
     }
     static loadPackage(...args) {
         let path;
@@ -466,21 +554,26 @@ export class UIPackage {
             case PackageItemType.Sound:
                 if (!item.decoded) {
                     item.decoded = true;
-                    item.asset = this._bundle.get(item.file, ItemTypeToAssetType[item.type]);
-                    if (!item.asset)
-                        console.log("Resource '" + item.file + "' not found");
-                    else if (item.type == PackageItemType.Atlas) {
-                        const asset = item.asset;
-                        let tex = asset['_texture'];
-                        if (!tex) {
-                            tex = new Texture2D();
-                            tex.name = asset.nativeUrl;
-                            tex.image = asset;
-                        }
-                        item.asset = tex;
+                    if (!this._bundle) {
+                        item.asset = item.owner._remoteAssets.get(item.file);
                     }
                     else {
-                        item.asset = item.asset;
+                        item.asset = this._bundle.get(item.file, ItemTypeToAssetType[item.type]);
+                        if (!item.asset)
+                            console.log("Resource '" + item.file + "' not found");
+                        else if (item.type == PackageItemType.Atlas) {
+                            const asset = item.asset;
+                            let tex = asset['_texture'];
+                            if (!tex) {
+                                tex = new Texture2D();
+                                tex.name = asset.nativeUrl;
+                                tex.image = asset;
+                            }
+                            item.asset = tex;
+                        }
+                        else {
+                            item.asset = item.asset;
+                        }
                     }
                 }
                 break;

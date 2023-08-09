@@ -17,6 +17,7 @@ export declare class UIPackage {
     private _branches;
     _branchIndex: number;
     private _bundle;
+    private _remoteAssets;
     constructor();
     static get branch(): string | null;
     static set branch(value: string | null);
@@ -29,6 +30,9 @@ export declare class UIPackage {
      * @param path 相对 resources 的路径。
      */
     static addPackage(path: string): UIPackage;
+    static loadRemotePackage(url: string, onProgress?: (finish: number, total: number) => void, onComplete?: (error: Error, pkg: UIPackage) => void): void;
+    static loadRemote(request: string, type: any, onComplete: (err: Error | null, data: any) => void): void;
+    static loadAny(request: any, options: any, onProgress: (finished: number, total: number, item: AssetManager.RequestItem) => void, onComplete: (err: Error | null, data: any) => void): void;
     /**
      * 载入一个包。包的资源从Asset Bundle加载.
      * @param bundle Asset Bundle 对象.
